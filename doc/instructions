@@ -1,0 +1,51 @@
+使用环境
+    python3 + django + uwsgi + nginx
+一、python3 环境
+    1、下载python3.6安装包，默认安装   地址： https://www.python.org/downloads/
+    2、cmd窗口执行命令 pip install requests --upgrade
+    3、cmd窗口执行命令 pip install PyMySQL
+    4、cmd窗口进入到env_setup目录执行命令 easy_install xlrd-1.0.0
+    5、cmd窗口进入到env_setup目录执行命令 easy_install xlwt-1.3.0
+    6、cmd窗口进入到env_setup目录执行命令 easy install xlutils-2.0.0
+    7、cmd窗口执行命令 pip install django
+    8、cmd窗口执行命令 pip install uwsgi
+二、nginx + django + uwsgi配置
+    1、安装 nginx    sudo apt-get install nginx
+    2、uwsgi 配置  配置文件子在 apiTest Django项目目录下根据实际情况修改
+    3、nginx 配置  参考配置文件在doc目录下
+三、启动服务
+    1、启动 uwsgi : 在api_test_framework/apiTest/目录下执行命令  uwsgi --ini wsgi.ini
+    2、启动 nginx ： /etc/init.d/nginx start
+    3、浏览器访问 127.0.0.1:8099 验证服务启动
+
+使用说明
+一、添加接口，用命令执行测试
+    测试接口在test_framework/test_api目录下添加
+        所有文件夹均已python package的形式添加
+        1、新建项目（project_demo）
+        2、在项目下新建模块（demo)
+        3、新建项目配置文件（xx_config.py, 根据实际环境添加多个)
+        4、添加测试接口
+            a、复制test_api目录下case_template.py 到指定模块，按照文件中说明修改文件名为接口路径
+            b、按照提示完成接口添加
+
+    框架配置文件（配置测试环境）
+        修改config.py文件 将TEST_ENV的值配置为项目配置文件的文件名 如项目配置文件名为 test_config.py  TEST_ENV = 'test'
+
+    测试用例存放在test_framework/test_data目录下
+        测试用例为excel文件，按照testcase_template.xls文件进行编写
+
+    测试报告和运行日志存放在test_framework/test_report目录下
+
+    运行测试执行test_framework/run_test.py
+        必选参数 -t 指定测试用例文件路径
+        可选参数 -m 测试报告发送邮件地址，多个地址用 ',' 分隔
+        eg. test_framework/python run_test.py -t test_data/demo.xls -m demo@demo.com
+
+二、 通过接口请求执行测试用例
+    运行django框架 apiTest
+    post 方式请求  ip:端口
+    参数说明
+    filename     excel格式的测试用例文件
+    email        邮件地址，用于接收测试报告
+    env          测试环境（如 test  pre  dev）

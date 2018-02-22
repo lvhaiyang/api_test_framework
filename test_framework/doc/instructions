@@ -1,0 +1,25 @@
+使用环境
+    python3
+
+使用说明
+    测试接口在test_api目录下添加
+        所有文件夹均已python package的形式添加
+        1、新建项目（project_demo）
+        2、在项目下新建模块（demo)
+        3、新建项目配置文件（xx_config.py, 根据实际环境添加多个)
+        4、添加测试接口
+            a、复制test_api目录下case_template.py 到指定模块，按照文件中说明修改文件名为接口路径
+            b、按照提示完成接口添加
+
+    框架配置文件（配置测试环境）
+        修改config.py文件 将TEST_ENV的值配置为项目配置文件的文件名 如项目配置文件名为 test_config.py  TEST_ENV = 'test'
+
+    测试用例存放在test_data目录下
+        测试用例为excel文件，按照testcase_template.xls文件进行编写
+
+    测试报告和运行日志存放在test_report目录下
+
+    运行测试执行run_test.py
+        必选参数 -t 指定测试用例文件路径
+        可选参数 -m 测试报告发送邮件地址，多个地址用 ',' 分隔
+        eg. python run_test.py -t test_data/demo.xls -m demo@demo.com

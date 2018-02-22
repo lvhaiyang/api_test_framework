@@ -1,0 +1,9 @@
+*.pyc
+*.out
+.noseids
+__pycache__
+.idea/
+apiTest/test_framework/*
+!apiTest/test_framework/__init__.py
+test_framework/test_report/*
+!test_framework/test_report/example_report.xls

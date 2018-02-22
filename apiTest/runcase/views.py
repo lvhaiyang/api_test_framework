@@ -50,7 +50,7 @@ def test_api(request):
     # 上传测试用例post请求
     if request.method == "POST":
         cf = CaseForm(request.POST, request.FILES)
-        # print(cf)
+        print(cf)
         # if cf.is_valid():
         try:
             filename = cf.cleaned_data['filename']

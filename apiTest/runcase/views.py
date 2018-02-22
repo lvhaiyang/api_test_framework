@@ -50,7 +50,7 @@ def test_api(request):
     # 上传测试用例post请求
     if request.method == "POST":
         cf = CaseForm(request.POST, request.FILES)
-        print(cf)
+        # print(cf)
         # if cf.is_valid():
         try:
             filename = cf.cleaned_data['filename']
@@ -92,7 +92,7 @@ def test_api(request):
         mail_addrs = emailaddr.split(',')
         run_test.main(excel_file_path=excel_file_path, mail_switch=1, mail_addrs=mail_addrs, env_path=env_path)
 
-        return JsonResponse({"code": 0, 'msg': '请求成功, 测试用例：{0} 执行完成；邮件通知：{1}'.format(filename, emailaddr)})
+        return JsonResponse({"code": 0, 'msg': '请求成功', 'data': {'测试环境': test_env, '测试用例': '{0}'.format(filename), '邮件通知': emailaddr}})
 
     else:
         return HttpResponse("<h1>hello api test framework</h1>", content_type="text/html")

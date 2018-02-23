@@ -383,29 +383,32 @@ def run_case(test_datas, json_file_path, logger, env_path):
             except:
                 logger.debug(u'接口中不存在文件后缀')
 
-            mode_path = ''
-            for case_path in os.walk(env_path):
-                for case_file in case_path[2]:
-                    if re.match(func_name_str, case_file):
-                        if re.match('Win', platform.system()):
-                            mode_path = '.'.join(case_path[0].split('\\')[1:])
-                        else:
-                            mode_path = '.'.join(case_path[0].split('/')[1:])
+            try:
+                mode_path = ''
+                for case_path in os.walk(env_path):
+                    for case_file in case_path[2]:
+                        if re.match(func_name_str, case_file):
+                            if re.match('Win', platform.system()):
+                                mode_path = '.'.join(case_path[0].split('\\')[1:])
+                            else:
+                                mode_path = '.'.join(case_path[0].split('/')[1:])
 
-            mode_path = 'test_api' + mode_path.split('test_api')[1]
-            mode_path = mode_path.split('.__pycache__')[0]
+                mode_path = 'test_api' + mode_path.split('test_api')[1]
+                mode_path = mode_path.split('.__pycache__')[0]
+                mode_name = u'{0}.{1}'.format(mode_path, func_name_str)
+                logger.debug(u'测试用例路径 {0}'.format(mode_name))
+                config_mode_path = u'.'.join(mode_name.split('.')[:2])
+                config_mode_name = u'{0}.{1}_config'.format(config_mode_path, TEST_ENV)
+                logger.debug(u'配置文件为 {0}'.format(config_mode_name))
 
-            mode_name = u'{0}.{1}'.format(mode_path, func_name_str)
-            logger.debug(u'测试用例路径 {0}'.format(mode_name))
-            config_mode_path = u'.'.join(mode_name.split('.')[:2])
-            config_mode_name = u'{0}.{1}_config'.format(config_mode_path, TEST_ENV)
-            logger.debug(u'配置文件为 {0}'.format(config_mode_name))
-            # logger.debug(u'配置文件为 {0}'.format(config_mode_name))
+                case_mode = import_module(mode_name)
+                config_mode = import_module(config_mode_name)
+                base_url = config_mode.BASE_URL
 
-            case_mode = import_module(mode_name)
-            config_mode = import_module(config_mode_name)
+            except Exception as e:
+                logger.debug(traceback.format_exc())
+                logger.debug(u'接口 {0} 测试用例模块导入失败，配置文件导入失败  ！！！！！！！！！！'.format(api_url))
 
-            base_url = config_mode.BASE_URL
 
             logger.debug(u'开始测试接口   {}'.format(api_url))
 

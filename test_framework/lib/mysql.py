@@ -35,12 +35,11 @@ class MysqlConnection(object):
             cursor.execute(sql)
             db.commit()
             db.close()
-            self.logger.debug(u'insert 语句  {0} 执行成功 '.format(sql))
+            self.logger.debug(u'insert 语句执行成功 ')
         except:
-            self.logger.debug(u'insert 语句  {0} 执行失败 '.format(sql))
+            self.logger.debug(u'insert 语句执行失败 ')
             self.logger.debug(traceback.format_exc())
             return 'db_insert_error'
-
 
     def delete(self, sql):
         try:
@@ -51,9 +50,9 @@ class MysqlConnection(object):
             cursor.execute(sql)
             db.commit()
             db.close()
-            self.logger.debug(u'delete 语句  {0} 执行成功 '.format(sql))
+            self.logger.debug(u'delete 语句执行成功 ')
         except:
-            self.logger.debug(u'delete 语句  {0} 执行失败 '.format(sql))
+            self.logger.debug(u'delete 语句执行失败 ')
             return 'db_delete_error'
 
     def update(self, sql):
@@ -65,11 +64,10 @@ class MysqlConnection(object):
             cursor.execute(sql)
             db.commit()
             db.close()
-            self.logger.debug(u'update 语句  {0} 执行成功 '.format(sql))
+            self.logger.debug(u'update 语句执行成功 ')
         except:
-            self.logger.debug(u'update 语句  {0} 执行失败 '.format(sql))
+            self.logger.debug(u'update 语句执行失败 ')
             return 'db_update_error'
-
 
     def select(self, sql):
         try:
@@ -87,7 +85,7 @@ class MysqlConnection(object):
                 self.logger.debug(u'select 语句 查询结果为 {0}'.format(results[0][0]))
                 return 'db_select_pass', results[0][0]
         except:
-            self.logger.debug(u'select 语句  执行失败')
+            self.logger.debug(u'select 语句执行失败')
             return 'db_select_error', ''
 
 
@@ -104,10 +102,15 @@ class DatabaseCheckTemplate(object):
     # name = 'ShangChengConfig'
     name = ''
 
-    def __init__(self, config_mode, logger=None, send_data=None, json_file_path=None):
+    def __init__(self, config_mode, logger=None, send_data=None, json_file_path=None, db_setup_del=None, db_setup_insert=None, db_teardown=None, db_verify=None, db_expect=None):
         self.send_data = send_data
         self.logger = logger
         self.save_json_data = load_json_file(json_file_path)  # 所有请求接口的返回值组成的字典，键为接口的名字，值为接口返回json值
+        self.db_setup_del = eval(db_setup_del)
+        self.db_setup_insert = eval(db_setup_insert)
+        self.db_teardown = eval(db_teardown)
+        self.db_verify = eval(db_verify)
+        self.db_expect = eval(db_expect)
         self.logger.debug(u'读取数据库配置为  {0}'.format(self.name))
         try:
             self.host = eval('config_mode.{0}.HOST'.format(self.name))
@@ -136,35 +139,34 @@ class DatabaseCheckTemplate(object):
         '''
         MYSQL = self.MYSQL
         # 清理数据库
-        # eg. 'DELETE FROM turn_log WHERE prize_name = '谢谢参与2';'
-        sql = "DELETE FROM turn_log WHERE prize_name = '谢谢参与2'"
-        result1 = MYSQL.delete(sql=sql)
-        # print result1
+        delete_sqls = self.db_setup_del
+        self.execute_sqls(delete_sqls=delete_sqls)
 
         # 插入测试数据
-        # eg. 'INSERT INTO `juzi`.`turn_log` (`user_id`, `prize_name`, `prize_id`, `add_time`, `recharge`, `phone`, `re_time`, `money`, `sharenum`) VALUES ('521206', '谢谢参与2', '5', '2017-11-16 10:43:38', '0', NULL, NULL, NULL, '0');'
-        sql = "INSERT INTO `juzi`.`turn_log` (`user_id`, `prize_name`, `prize_id`, `add_time`, `recharge`, `phone`, `re_time`, `money`, `sharenum`) VALUES ('521206', '谢谢参与2', '5', '2017-11-16 10:43:38', '0', NULL, NULL, NULL, '0')"
-        result2 = MYSQL.insert(sql=sql)
-        # print result2
+        insert_sqls = self.db_setup_insert
+        self.execute_sqls(insert_sqls=insert_sqls)
+
+    def tear_down(self):
+        '''
+        数据库 清理测试数据
+        :return:
+        '''
+        # 清理数据库
+        delete_sqls = self.db_teardown
+        self.execute_sqls(delete_sqls=delete_sqls)
 
     def verify_mode(self):
         '''
         验证数据库
         :return:
         '''
-        MYSQL = self.MYSQL
         # 查询到一个数据的sql
         # eg. 'SELECT prize_name FROM turn_log where user_id = '521206''
-        sql = "SELECT prize_name FROM turn_log where prize_name = '谢谢参与2'"
-        value = MYSQL.select(sql=sql)
-        expect_string = ''
-        result = self.expect_mode(value, expect_string)
-
-        if result == 'pass':
-            return 'pass'
-        else:
-            return 'fail'
-
+        select_sqls = self.db_verify
+        expect_strings = self.db_expect
+        values = self.execute_sqls(select_sqls=select_sqls)
+        result = self.expect_mode(values, expect_strings)
+        return result
 
     def expect_mode(self, values, expect_strings):
         '''
@@ -246,6 +248,20 @@ class DatabaseCheckTemplate(object):
             else:
                 return 'error'
 
+    def run_teardown(self):
+        '''
+        数据库测试数据清理
+        :return:
+        '''
+        self.logger.debug(u'开始进行数据库测试数据清理')
+        if self.check_db_connect() == 'db_connect_success':
+            return self.tear_down()
+        else:
+            if self.name == '':
+                return 'error'
+            else:
+                return 'error'
+
     def execute_sqls(self, insert_sqls=None, delete_sqls=None, update_sqls=None, select_sqls=None):
 
         # insert
@@ -273,18 +289,16 @@ class DatabaseCheckTemplate(object):
             return []
 
 
-
 if __name__ == '__main__':
     from config import *
     name = 'ShangChengConfig'
-    host = eval(name).HOST
-    port = eval(name).PORT
-    user = eval(name).USER
-    password = eval(name).PASSWORD
-    db_name = eval(name).DB
+    # host = eval(name).HOST
+    # port = eval(name).PORT
+    # user = eval(name).USER
+    # password = eval(name).PASSWORD
+    # db_name = eval(name).DB
 
-
-    db = mysql.connect(host=host, port=port, user=user, passwd=password, db=db_name)
+    # db = mysql.connect(host=host, port=port, user=user, passwd=password, db=db_name)
     # sql = 'insert into login_user (username, password) values (%s, %s)'
     # param = (('hylv', '123456'),)
     # con.insert(sql, param)
@@ -293,14 +307,13 @@ if __name__ == '__main__':
     # param = ('lvhaiyang', '123456')
     # con.update(sql, param)
 
-    sql = "SELECT prize_name FROM turn_log where prize_name = '谢谢参与3'"
-    cursor = db.cursor()
-    cursor.execute(sql)
-    results = cursor.fetchall()
+    # sql = "SELECT prize_name FROM turn_log where prize_name = '谢谢参与3'"
+    # cursor = db.cursor()
+    # cursor.execute(sql)
+    # results = cursor.fetchall()
     # print results
 
     # sql = 'delete from login_user where id=1'
     # con.delete(sql)
 
-
-    db.close()
+    # db.close()

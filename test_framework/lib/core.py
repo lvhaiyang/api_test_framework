@@ -155,10 +155,10 @@ def verify_mode(res, expect_data=None, logger=None):
     res_data = {}
     try:
         res_data = res.json()
-        if check_py_version() == '2.x':
-            logger.debug(u'响应结果为：{}'.format(json.dumps(res_data, ensure_ascii=False, encoding='UTF-8')))
-        elif check_py_version() == '3.x':
-            logger.debug(u'响应结果为：{}'.format(json.dumps(res_data, ensure_ascii=False)))
+        # if check_py_version() == '2.x':
+        #     logger.debug(u'响应结果为：{}'.format(json.dumps(res_data, ensure_ascii=False, encoding='UTF-8')))
+        # elif check_py_version() == '3.x':
+        #     logger.debug(u'响应结果为：{}'.format(json.dumps(res_data, ensure_ascii=False)))
     except:
         # logger.debug(traceback.format_exc())
         logger.debug(u'未发现json返回值  ！！！！！！！！！！')
@@ -199,15 +199,15 @@ def set_report_template(logger):
     # 定义报告样式
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet("report")
-    for i in [0, 1, 2, 8, 9]:
+    for i in [0]:
         first_col = ws.col(i)  # xlwt中是行和列都是从0开始计算的
         first_col.width = 256 * 30
 
-    for i in [10]:
-        first_col = ws.col(i)  # xlwt中是行和列都是从0开始计算的
-        first_col.width = 156 * 20
+    # for i in [10]:
+    #     first_col = ws.col(i)  # xlwt中是行和列都是从0开始计算的
+    #     first_col.width = 156 * 20
 
-    for i in [12, 13]:
+    for i in [16]:
         first_col = ws.col(i)  # xlwt中是行和列都是从0开始计算的
         first_col.width = 156 * 25
 
@@ -286,6 +286,7 @@ def save_report(run_time, wb, logger, env_path):
     logger.info(u'保存测试报告路径为 {0}'.format(report))
     return report
 
+
 def write_report(run_time, wb, ws, test_report, logger, env_path):
     '''
     测试结果写入报告
@@ -303,8 +304,8 @@ def write_report(run_time, wb, ws, test_report, logger, env_path):
     style_fail = set_excel_style(2)
     style_error = set_excel_style(6)
     # 执行结果写入报告
-    result_no = 12
-    db_result_no = 13
+    result_no = -2
+    db_result_no = -1
     for row in range(len(test_report)):
         test_data = test_report[row]
 
@@ -344,13 +345,13 @@ def run_case(test_datas, json_file_path, logger, env_path):
     for i in range(len(test_datas)):
         res_content = u'no response'
         test_data = test_datas[i]
-        case_name, api_name, api_url, headers, request_type, data_type, data, db_switch, expect_data = test_data
+        api_name, api_url, headers, request_type, data_type, data, db_setup_del, db_setup_insert, db_teardown, db_verify, db_expect, expect_data = test_data
         if i == 0:
             value = u'响应结果'
             value2 = u'响应时间(s)'
             value3 = u'状态码'
             value4 = u'测试结果'
-            value5 = u'数据库校验'
+            value5 = u'数据库校验结果'
             test_data.append(value)
             test_data.append(value2)
             test_data.append(value3)
@@ -409,22 +410,21 @@ def run_case(test_datas, json_file_path, logger, env_path):
                 logger.debug(traceback.format_exc())
                 logger.debug(u'接口 {0} 测试用例模块导入失败，配置文件导入失败  ！！！！！！！！！！'.format(api_url))
 
-
             logger.debug(u'开始测试接口   {}'.format(api_url))
 
             db_check_result = u'未开启数据库校验'
             # 初始化数据库
-            if db_switch == u'Y':
-                logger.debug(u'数据库校验： 开启')
+            if eval(db_setup_del) or eval(db_setup_insert):
+                logger.debug(u'数据库初始化： 开启')
                 try:
-                    DB = case_mode.DatabaseCheck(config_mode, logger=logger, send_data=data, json_file_path=json_file_path)
+                    DB = case_mode.DatabaseCheck(config_mode, logger=logger, send_data=data, json_file_path=json_file_path, db_setup_del=db_setup_del, db_setup_insert=db_setup_insert, db_teardown=db_teardown, db_verify=db_verify, db_expect=db_expect)
                 except:
                     logger.debug(traceback.format_exc())
-                    db_check_result = u'error'
+                    logger.debug(u'数据库连接： 失败！！！！！！！！！！')
                 else:
                     DB.run_set_up()
             else:
-                logger.debug(u'数据库校验： 关闭')
+                logger.debug(u'数据库初始化： 关闭')
 
             # 接口请求
             try:
@@ -438,13 +438,13 @@ def run_case(test_datas, json_file_path, logger, env_path):
                     res, status_code, result, response_time = API.run()
                     new_headers, new_send_data, new_expect_data = API.replace_data()
                     if check_py_version() == '2.x':
-                        test_data[3] = json.dumps(new_headers, ensure_ascii=False, encoding='UTF-8')
-                        test_data[6] = json.dumps(new_send_data, ensure_ascii=False, encoding='UTF-8')
-                        test_data[8] = json.dumps(new_expect_data, ensure_ascii=False, encoding='UTF-8')
+                        test_data[2] = json.dumps(new_headers, ensure_ascii=False, encoding='UTF-8')
+                        test_data[5] = json.dumps(new_send_data, ensure_ascii=False, encoding='UTF-8')
+                        test_data[11] = json.dumps(new_expect_data, ensure_ascii=False, encoding='UTF-8')
                     elif check_py_version() == '3.x':
-                        test_data[3] = json.dumps(new_headers, ensure_ascii=False)
-                        test_data[6] = json.dumps(new_send_data, ensure_ascii=False)
-                        test_data[8] = json.dumps(new_expect_data, ensure_ascii=False)
+                        test_data[2] = json.dumps(new_headers, ensure_ascii=False)
+                        test_data[5] = json.dumps(new_send_data, ensure_ascii=False)
+                        test_data[11] = json.dumps(new_expect_data, ensure_ascii=False)
                 except:
                     # logger.debug(traceback.format_exc())
                     print(traceback.format_exc())
@@ -452,15 +452,34 @@ def run_case(test_datas, json_file_path, logger, env_path):
                     res, status_code, result, response_time = None, None, u'error', None
 
             # 数据库校验
-            if db_switch == u'Y':
+            if eval(db_verify) and eval(db_expect):
+                logger.debug(u'数据库校验： 开启')
                 try:
-                    DB = case_mode.DatabaseCheck(config_mode, logger=logger, send_data=data, json_file_path=json_file_path)
+                    DB = case_mode.DatabaseCheck(config_mode, logger=logger, send_data=data, json_file_path=json_file_path, db_setup_del=db_setup_del, db_setup_insert=db_setup_insert, db_teardown=db_teardown, db_verify=db_verify, db_expect=db_expect)
                 except:
                     logger.debug(traceback.format_exc())
+                    logger.debug(u'数据库连接： 失败！！！！！！！！！！')
                     db_check_result = u'error'
                 else:
                     db_check_result = DB.run_verify()
+            else:
+                logger.debug(u'数据库校验： 关闭')
 
+            # 数据库测试数据清理
+            if eval(db_teardown):
+                logger.debug(u'数据库测试数据清理： 开启')
+                try:
+                    DB = case_mode.DatabaseCheck(config_mode, logger=logger, send_data=data,
+                                                 json_file_path=json_file_path, db_setup_del=db_setup_del,
+                                                 db_setup_insert=db_setup_insert, db_teardown=db_teardown,
+                                                 db_verify=db_verify, db_expect=db_expect)
+                except:
+                    logger.debug(traceback.format_exc())
+                    logger.debug(u'数据库连接： 失败！！！！！！！！！！')
+                else:
+                    DB.run_teardown()
+            else:
+                logger.debug(u'数据库测试数据清理： 关闭')
 
             # 生成报告
             if res is None:
@@ -520,8 +539,8 @@ def generate_test_info(start_time, stop_time, test_report, test_case_file):
     :return: 字典 测试信息
     '''
     # 生成测试结果统计信息
-    result_no = 12
-    db_result_no = 13
+    result_no = -2
+    db_result_no = -1
     total_pass = 0
     total_fail = 0
     total_error = 0

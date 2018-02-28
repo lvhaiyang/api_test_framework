@@ -10,6 +10,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 CASE_INFO = ''
 
+
 # 接口部分
 class ApiTest(ApiTemplate):
 
@@ -71,47 +72,5 @@ class DatabaseCheck(DatabaseCheckTemplate):
     # name = 'ShangChengConfig'
     name = ''
 
-    def set_up(self):
-        '''
-        初始化数据库
-        :return:
-        '''
-        MYSQL = self.MYSQL
-        # 》》》》》》》》
-        #  step 2 第二个需要修改的地方
-        # 清理数据库
-        # delete_sqls = ["DELETE FROM m_index_like_details WHERE scene_id = '999'",
-        #                "DELETE FROM m_index_like_details WHERE scene_id = '888'"]
-
-        delete_sqls = []
-
-        self.execute_sqls(delete_sqls=delete_sqls)
-        # 》》》》》》》》
-        #  step 3 第三个需要修改的地方
-        # 插入测试数据
-        # insert_sqls = ["INSERT INTO `m_index_like_details` (`scene_id`, `scene_title`, `like_user`, `like_time`, `update_time`, `like_state`, `user_device_num`, `spare_field3`) VALUES ('888', NULL, '62160899', '2017-12-28 11:37:04', NULL, '1', NULL, NULL)",
-        #                "INSERT INTO `m_index_like_details` (`scene_id`, `scene_title`, `like_user`, `like_time`, `update_time`, `like_state`, `user_device_num`, `spare_field3`) VALUES ('999', NULL, '62160899', '2017-12-28 11:37:04', NULL, '1', NULL, NULL)"]
-
-        insert_sqls = []
-
-        self.execute_sqls(insert_sqls=insert_sqls)
-
-    def verify_mode(self):
-        MYSQL = self.MYSQL
-
-        # 》》》》》》》》
-        #  step 4 第四个需要修改的地方（查询sql语句， 需要验证的字段）
-        # 查询到一个数据的sql
-        # 需要验证的字段
-        # select_sqls = ["SELECT scene_id FROM m_index_like_details where scene_id = '999'",
-        #                "SELECT scene_id FROM m_index_like_details where scene_id = '999'"]
-        # expect_strings = ['999', '999']
-
-        select_sqls = []
-        expect_strings = []
-
-        values = self.execute_sqls(select_sqls=select_sqls)
-        result = self.expect_mode(values, expect_strings)
-        return result
 
 

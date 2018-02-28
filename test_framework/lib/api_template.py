@@ -89,10 +89,10 @@ class ApiTemplate(object):
         self.change_expect_data()
         self.save_request_data()
 
-        if check_py_version() == '2.x':
-            self.logger.debug(u'预期结果：{}'.format(json.dumps(self.expect_data, ensure_ascii=False, encoding='UTF-8')))
-        elif check_py_version() == '3.x':
-            self.logger.debug(u'预期结果：{}'.format(json.dumps(self.expect_data, ensure_ascii=False)))
+        # if check_py_version() == '2.x':
+        #     self.logger.debug(u'预期结果：{}'.format(json.dumps(self.expect_data, ensure_ascii=False, encoding='UTF-8')))
+        # elif check_py_version() == '3.x':
+        #     self.logger.debug(u'预期结果：{}'.format(json.dumps(self.expect_data, ensure_ascii=False)))
         save_json_file(self.json_file_path, self.save_json_data)
 
         res, status_code, result = verify_mode(self.response, expect_data=self.expect_data, logger=self.logger)
@@ -179,7 +179,9 @@ class ApiTemplate(object):
                         exec(cmd)
                     except:
                         self.logger.debug(traceback.format_exc())
-                        self.logger.debug(u'替换命令 {0} 执行失败'.format(cmd))
+                        self.logger.debug(u'替换命令 {0} 执行失败 ！！！！！！！！！！'.format(cmd))
+                        self.logger.debug(u'执行替换命令 需要前置条件接口 {} 执行完成'.format(cmd.split('replace_data[')[1].split(']')[0]))
+
         self.logger.debug(u'替换后{0}信息为：{1}'.format(name, data))
 
     def save_request_data(self):

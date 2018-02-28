@@ -32,10 +32,14 @@ def main(help_switch=None, test_data_switch=None, excel_file_path=None, mail_swi
     wb, ws = set_report_template(logger)
     # 读取excel测试用例
     test_datas = read_case_file(excel_file_path, logger)
+    if test_datas == '测试用例读取失败':
+        return '测试用例读取失败'
     # 创建临时log文件
     json_file_path = create_temp_log_file(logger, env_path)
     # 执行case
     test_report = run_case(test_datas, json_file_path, logger, env_path)
+    if test_report == '测试用例读取失败':
+        return '测试用例读取失败'
     # 测试结果写入测试报告
     report_file_path = write_report(start_str_time, wb, ws, test_report, logger, env_path)
     # 生成测试信息

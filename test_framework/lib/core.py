@@ -230,8 +230,8 @@ def read_case_file(excel_file, logger):
         return test_datas
     except:
         logger.info(u'测试用例 ：{0} 读取失败！！！！！！！！！！'.format(excel_file))
-        logger.info(u'请确认测试用例路径是否正确！！！！！！！！！！')
-        sys.exit(0)
+        logger.info(u'请确认excel测试用例路径是否正确！！！！！！！！！！')
+        return '测试用例读取失败'
 
 
 def create_temp_log_file(logger, env_path):
@@ -344,7 +344,12 @@ def run_case(test_datas, json_file_path, logger, env_path):
     for i in range(len(test_datas)):
         res_content = u'no response'
         test_data = test_datas[i]
-        case_name, api_name, api_url, headers, request_type, data_type, data, db_switch, expect_data = test_data
+        try:
+            case_name, api_name, api_url, headers, request_type, data_type, data, db_switch, expect_data = test_data
+        except Exception as e:
+            logger.info(u'测试用例读取失败')
+            return '测试用例读取失败'
+
         if i == 0:
             value = u'响应结果'
             value2 = u'响应时间(s)'

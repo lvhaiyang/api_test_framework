@@ -56,17 +56,17 @@ def test_api(request):
             filename = cf.cleaned_data['filename']
         except Exception as e:
             print(e.args)
-            return JsonResponse({"code": 101, 'msg': '测试用例信息获取失败'})
+            return JsonResponse({"code": 101, 'msg': 'filename不能为空'})
         try:
             emailaddr = cf.cleaned_data['email']
         except Exception as e:
             print(e.args)
-            return JsonResponse({"code": 102, 'msg': 'email信息获取失败'})
+            return JsonResponse({"code": 102, 'msg': 'email不能为空'})
         try:
             test_env = cf.cleaned_data['env']
         except Exception as e:
             print(e.args)
-            return JsonResponse({"code": 103, 'msg': '测试环境信息获取失败'})
+            return JsonResponse({"code": 103, 'msg': 'test_env不能为空'})
 
         #写入数据库
         f = Upload()
@@ -90,7 +90,10 @@ def test_api(request):
         print(env_path)
         excel_file_path = dst_testcase_file
         mail_addrs = emailaddr.split(',')
-        run_test.main(excel_file_path=excel_file_path, mail_switch=1, mail_addrs=mail_addrs, env_path=env_path)
+        result = run_test.main(excel_file_path=excel_file_path, mail_switch=1, mail_addrs=mail_addrs, env_path=env_path)
+
+        if result == '测试用例读取失败':
+            return JsonResponse({"code": 104, 'msg': '测试用例读取失败, 请检查excel测试用例文件'})
 
         return JsonResponse({"code": 0, 'msg': '请求成功', 'data': {'测试环境': test_env, '测试用例': '{0}'.format(filename), '邮件通知': emailaddr}})
 

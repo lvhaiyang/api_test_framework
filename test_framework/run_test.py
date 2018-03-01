@@ -29,19 +29,19 @@ def main(help_switch=None, test_data_switch=None, excel_file_path=None, mail_swi
     logger.info(u'测试环境：{}'.format(TEST_ENV))
     logger.info(u"测试用例文件：{}".format(excel_file_path))
     # 创建execl报告
-    wb, ws = set_report_template(logger)
+    wb, ws = set_report_template()
     # 读取excel测试用例
-    test_datas = read_case_file(excel_file_path, logger)
+    test_datas = read_case_file(excel_file_path)
     if test_datas == '测试用例读取失败':
         return '测试用例读取失败'
     # 创建临时log文件
-    json_file_path = create_temp_log_file(logger, env_path)
+    json_file_path = create_temp_log_file(env_path)
     # 执行case
-    test_report = run_case(test_datas, json_file_path, logger, env_path)
+    test_report = run_case(test_datas, json_file_path, env_path)
     if test_report == '测试用例读取失败':
         return '测试用例读取失败'
     # 测试结果写入测试报告
-    report_file_path = write_report(start_str_time, wb, ws, test_report, logger, env_path)
+    report_file_path = write_report(start_str_time, wb, ws, test_report, env_path)
     # 生成测试信息
     stop_date_time = create_run_time()
     test_info = generate_test_info(start_date_time, stop_date_time, test_report, excel_file_path)
@@ -49,7 +49,7 @@ def main(help_switch=None, test_data_switch=None, excel_file_path=None, mail_swi
     # 发送邮件
     if mail_switch == 1:
         logger.info(u'发送邮件功能： 开启')
-        send_mail(logger=logger, mailto_addrs=mail_addrs, test_report=test_report, test_info=test_info, report_file_path1=report_file_path,
+        send_mail(mailto_addrs=mail_addrs, test_report=test_report, test_info=test_info, report_file_path1=report_file_path,
                   report_file_path2='{0}.log'.format(report_file_path.split('.xls')[0]))
     else:
         logger.info(u'发送邮件功能： 关闭')

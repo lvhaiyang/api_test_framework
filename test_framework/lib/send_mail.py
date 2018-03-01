@@ -6,6 +6,7 @@ import traceback
 import socket
 import smtplib
 import platform
+import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
@@ -66,7 +67,7 @@ def generate_mail_body(test_report=None, test_info=None):
     return html_report
 
 
-def send_mail(logger=None, mailto_addrs=None, test_report=None, test_info=None, report_file_path1=None, report_file_path2=None):
+def send_mail(mailto_addrs=None, test_report=None, test_info=None, report_file_path1=None, report_file_path2=None):
     '''
     发送邮件模块
     :param logger:  logging 日志对象
@@ -76,6 +77,7 @@ def send_mail(logger=None, mailto_addrs=None, test_report=None, test_info=None, 
     :param report_file_path2:   log测试日志文件路径
     :return:    None
     '''
+    logger = logging.getLogger('qa')
     logger.debug(u'开始发送邮件到 {0}'.format(mailto_addrs))
     sender = 'zidongceshi@juzifenqi.com'
     receiver = mailto_addrs

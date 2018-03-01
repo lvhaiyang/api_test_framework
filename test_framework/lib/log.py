@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import logging
 import os
 
+
 def capture_log(run_time, env_path):
     '''
     创建日志
@@ -30,13 +31,13 @@ def capture_log(run_time, env_path):
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
 
-    logger.addHandler(ch)
-    logger.addHandler(fh)
+    for i in logger.handlers:
+        logger.handlers.remove(i)
+
+    logger.handlers.append(ch)
+    logger.handlers.append(fh)
 
     return logger
-
-
-
 
 
 

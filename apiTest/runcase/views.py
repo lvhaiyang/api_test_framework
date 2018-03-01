@@ -4,6 +4,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django import forms
 from runcase.models import Upload
+from importlib import import_module
 import os
 import sys
 import datetime
@@ -83,14 +84,20 @@ def test_api(request):
             if re.search(test_env, i):
                 shutil.copyfile(os.path.join('test_framework', flag, i), os.path.join('test_framework', flag, 'config.py'))
 
+        sys.path.append('test_framework')
         sys.path.append(os.path.join('test_framework', flag))
-        import run_test
+        mode_name = 'test_framework.{}.run_test'.format(flag)
+        run_test = import_module(mode_name)
+        # print(sys.path)
         env_path = run_test.__file__
         env_path = env_path.split('run_test.py')[0]
-        print(env_path)
+        print(u'测试用例执行路径: ', env_path)
         excel_file_path = dst_testcase_file
         mail_addrs = emailaddr.split(',')
         result = run_test.main(excel_file_path=excel_file_path, mail_switch=1, mail_addrs=mail_addrs, env_path=env_path)
+
+        sys.path.remove(os.path.join('test_framework', flag))
+        sys.path.remove('test_framework')
 
         if result == '测试用例读取失败':
             return JsonResponse({"code": 104, 'msg': '测试用例读取失败, 请检查excel测试用例文件'})

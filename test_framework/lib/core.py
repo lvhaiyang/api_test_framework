@@ -11,6 +11,7 @@ import datetime
 import requests
 import traceback
 import platform
+import logging
 from importlib import import_module
 from config import *
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -89,7 +90,7 @@ def set_excel_style(colour_index=1):
     return style
 
 
-def request_mode(session=None, request_type=None, url=None, data_type=None, data=None, headers=None, logger=None):
+def request_mode(session=None, request_type=None, url=None, data_type=None, data=None, headers=None):
     '''
     运行接口测试模块
     :param session:      requests session 对象
@@ -101,7 +102,7 @@ def request_mode(session=None, request_type=None, url=None, data_type=None, data
     :param logger:      logging 日志对象
     :return:     requests 请求成功返回response对象， 请求失败返回错误类型
     '''
-
+    logger = logging.getLogger('qa')
     logger.debug(u'开始请求接口：{0}'.format(url))
     headers['User-Agent'] = 'Mozilla/5.0 (Linux; U; Android 7.0; zh-cn; HUAWEI NXT-DL00 Build/HUAWEINXT-DL00) AppleWebKit/533.1 (KHTML, like Gecko) Version/5.0 Mobile Safari/533.1'
     try:
@@ -130,7 +131,7 @@ def request_mode(session=None, request_type=None, url=None, data_type=None, data
         return None
 
 
-def verify_mode(res, expect_data=None, logger=None):
+def verify_mode(res, expect_data=None):
     '''
     验证测试用例
     :param res:      request_mode 方法返回值
@@ -138,7 +139,7 @@ def verify_mode(res, expect_data=None, logger=None):
     :param logger:       logging 日志对象
     :return:    request_mode 方法返回值， 接口状态码或者错误信息， 测试结果
     '''
-
+    logger = logging.getLogger('qa')
     logger.info(u'开始验证测试结果')
 
     if res is None:
@@ -189,12 +190,13 @@ def verify_mode(res, expect_data=None, logger=None):
         return res, status_code, result
 
 
-def set_report_template(logger):
+def set_report_template():
     '''
     设置excel报告样式
     :param logger:       logging 日志对象
     :return:        xlwt workbook对象， sheet对象
     '''
+    logger = logging.getLogger('qa')
     logger.info(u'开始初始化测试报告样式')
     # 定义报告样式
     wb = xlwt.Workbook(encoding='utf-8')
@@ -215,13 +217,14 @@ def set_report_template(logger):
     return wb, ws
 
 
-def read_case_file(excel_file, logger):
+def read_case_file(excel_file):
     '''
     读取测试用例
     :param excel_file:  excel测试用例文件路径
     :param logger:        logging 日志对象
     :return:    None
     '''
+    logger = logging.getLogger('qa')
     logger.info(u'开始读取测试用例 ：{0}'.format(excel_file))
     # 读取测试用例文件
     try:
@@ -234,12 +237,13 @@ def read_case_file(excel_file, logger):
         return '测试用例读取失败'
 
 
-def create_temp_log_file(logger, env_path):
+def create_temp_log_file(env_path):
     '''
     创建临时json文件，保存接口响应结果
     :param logger:       logging 日志对象
     :return:  json文件路径
     '''
+    logger = logging.getLogger('qa')
     logger.info(u'创建临时log文件 temp_log.json')
     # 创建临时log文件
     json_file_path = os.path.join(env_path, u'test_report', u'temp_log.json')
@@ -270,7 +274,7 @@ def create_run_time():
     # return run_time, current_time, test_datetime
 
 
-def save_report(run_time, wb, logger, env_path):
+def save_report(run_time, wb, env_path):
     '''
     保存测试报告
     :param run_time:     datatime格式  时间
@@ -278,6 +282,7 @@ def save_report(run_time, wb, logger, env_path):
     :param logger:       logging 日志对象
     :return:    测试报告保存路径
     '''
+    logger = logging.getLogger('qa')
     logger.info(u'开始保存测试报告')
     report_path = os.path.join(env_path, u'test_report')
     report_file = u'report{}.xls'.format(run_time)
@@ -287,7 +292,8 @@ def save_report(run_time, wb, logger, env_path):
     return report
 
 
-def write_report(run_time, wb, ws, test_report, logger, env_path):
+def write_report(run_time, wb, ws, test_report, env_path):
+
     '''
     测试结果写入报告
     :param run_time:      datatime格式  时间
@@ -297,6 +303,7 @@ def write_report(run_time, wb, ws, test_report, logger, env_path):
     :param logger:        logging 日志对象
     :return:    save_report(run_time, wb, logger)
     '''
+    logger = logging.getLogger('qa')
     logger.info(u'\n\n' + u'='*200)
     logger.info(u'测试结果写入报告')
     base_style = set_excel_style()
@@ -327,10 +334,10 @@ def write_report(run_time, wb, ws, test_report, logger, env_path):
                 ws.write(row, k, test_data[k], base_style)
 
     logger.info(u'测试结果写入报告完成')
-    return save_report(run_time, wb, logger, env_path)
+    return save_report(run_time, wb, env_path)
 
 
-def run_case(test_datas, json_file_path, logger, env_path):
+def run_case(test_datas, json_file_path, env_path):
     '''
     执行测试方法
     :param test_datas:  read_case_file方法返回值， excel测试用例 字典格式
@@ -338,6 +345,7 @@ def run_case(test_datas, json_file_path, logger, env_path):
     :param logger:        logging 日志对象
     :return:    列表格式  测试报告
     '''
+    logger = logging.getLogger('qa')
     logger.info(u'开始运行测试用例')
     test_report = []
     logger.info(u'初始化session 执行测试用例')
@@ -423,7 +431,7 @@ def run_case(test_datas, json_file_path, logger, env_path):
             if eval(db_setup_del) or eval(db_setup_insert):
                 logger.debug(u'数据库初始化： 开启')
                 try:
-                    DB = case_mode.DatabaseCheck(config_mode, logger=logger, send_data=data, json_file_path=json_file_path, db_setup_del=db_setup_del, db_setup_insert=db_setup_insert, db_teardown=db_teardown, db_verify=db_verify, db_expect=db_expect)
+                    DB = case_mode.DatabaseCheck(config_mode, send_data=data, json_file_path=json_file_path, db_setup_del=db_setup_del, db_setup_insert=db_setup_insert, db_teardown=db_teardown, db_verify=db_verify, db_expect=db_expect)
                 except:
                     logger.debug(traceback.format_exc())
                     logger.debug(u'数据库连接： 失败！！！！！！！！！！')
@@ -434,7 +442,7 @@ def run_case(test_datas, json_file_path, logger, env_path):
 
             # 接口请求
             try:
-                API = case_mode.ApiTest(base_url=base_url, session=session, json_file_path=json_file_path, request_type=request_type, send_data_type=data_type, send_data=data, headers=headers, expect_data=expect_data, api_url_suffix=api_url_suffix, logger=logger)
+                API = case_mode.ApiTest(base_url=base_url, session=session, json_file_path=json_file_path, request_type=request_type, send_data_type=data_type, send_data=data, headers=headers, expect_data=expect_data, api_url_suffix=api_url_suffix)
             except:
                 logger.debug(traceback.format_exc())
                 logger.debug(u'自动化库中没有对应接口 {}  ！！！！！！！！！！'.format(api_url))
@@ -461,7 +469,7 @@ def run_case(test_datas, json_file_path, logger, env_path):
             if eval(db_verify) and eval(db_expect):
                 logger.debug(u'数据库校验： 开启')
                 try:
-                    DB = case_mode.DatabaseCheck(config_mode, logger=logger, send_data=data, json_file_path=json_file_path, db_setup_del=db_setup_del, db_setup_insert=db_setup_insert, db_teardown=db_teardown, db_verify=db_verify, db_expect=db_expect)
+                    DB = case_mode.DatabaseCheck(config_mode, send_data=data, json_file_path=json_file_path, db_setup_del=db_setup_del, db_setup_insert=db_setup_insert, db_teardown=db_teardown, db_verify=db_verify, db_expect=db_expect)
                 except:
                     logger.debug(traceback.format_exc())
                     logger.debug(u'数据库连接： 失败！！！！！！！！！！')

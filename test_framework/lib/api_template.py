@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import os
 import requests
 import traceback
+import logging
 from lib.core import *
 from config import *
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -15,7 +16,7 @@ class ApiTemplate(object):
     这个类定义了 api 模板
     '''
 
-    def __init__(self, base_url=None, session=None, request_type=None, send_data_type=None, send_data=None, headers=None, expect_data=None, json_file_path=None, api_url_suffix=None, logger=None):
+    def __init__(self, base_url=None, session=None, request_type=None, send_data_type=None, send_data=None, headers=None, expect_data=None, json_file_path=None, api_url_suffix=None):
         '''
         这个方法初始化接口测试所需的所有数据
         :param base_url:        接口请求的域名
@@ -43,7 +44,7 @@ class ApiTemplate(object):
         self.response_json_data = {}    #接口响应json数据
         self.save_json_data = load_json_file(self.json_file_path)       #所有请求接口的返回值组成的字典，键为接口的名字，值为接口返回json值
         self.api_url_suffix = api_url_suffix        #接口地址后缀如：.json .html  .so 没有后缀为空
-        self.logger = logger
+        self.logger = logging.getLogger('qa')
         self.save_key = None        #接口名字
 
     def get_api_info(self):
@@ -72,7 +73,7 @@ class ApiTemplate(object):
         url = '{0}{1}'.format(self.base_url, self.api_url)
         self.logger.debug(u'请求地址：{}'.format(url))
         self.logger.debug(u'请求方式：{}'.format(self.request_type))
-        self.response = request_mode(session=self.session, request_type=self.request_type, url=url, data_type=self.send_data_type, data=self.send_data, headers=self.headers, logger=self.logger)
+        self.response = request_mode(session=self.session, request_type=self.request_type, url=url, data_type=self.send_data_type, data=self.send_data, headers=self.headers)
         try:
             self.response_time = int(self.response.elapsed.microseconds)/1000
             self.response_time = int(self.response_time)/1000.0
@@ -95,7 +96,7 @@ class ApiTemplate(object):
         #     self.logger.debug(u'预期结果：{}'.format(json.dumps(self.expect_data, ensure_ascii=False)))
         save_json_file(self.json_file_path, self.save_json_data)
 
-        res, status_code, result = verify_mode(self.response, expect_data=self.expect_data, logger=self.logger)
+        res, status_code, result = verify_mode(self.response, expect_data=self.expect_data)
         return res, status_code, result, self.response_time
 
     def change_headers(self):

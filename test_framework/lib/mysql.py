@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 import traceback
+import logging
 from lib.core import *
 
 
@@ -15,14 +16,14 @@ class MysqlConnection(object):
     '''
     这个类定义了一个连接MQSQL，增删改查的模板
     '''
-    def __init__(self, host, port, user, password, db_name, charset, logger):
+    def __init__(self, host, port, user, password, db_name, charset):
         self.host = host
         self.port = port
         self.user = user
         self.password = password
         self.db_name = db_name
         self.charset = charset
-        self.logger = logger
+        self.logger = logging.getLogger('qa')
 
     def insert(self, sql):
         try:
@@ -102,9 +103,9 @@ class DatabaseCheckTemplate(object):
     # name = 'ShangChengConfig'
     name = ''
 
-    def __init__(self, config_mode, logger=None, send_data=None, json_file_path=None, db_setup_del=None, db_setup_insert=None, db_teardown=None, db_verify=None, db_expect=None):
+    def __init__(self, config_mode, send_data=None, json_file_path=None, db_setup_del=None, db_setup_insert=None, db_teardown=None, db_verify=None, db_expect=None):
         self.send_data = send_data
-        self.logger = logger
+        self.logger = logging.getLogger('qa')
         self.save_json_data = load_json_file(json_file_path)  # 所有请求接口的返回值组成的字典，键为接口的名字，值为接口返回json值
         self.db_setup_del = eval(db_setup_del)
         self.db_setup_insert = eval(db_setup_insert)
@@ -127,7 +128,7 @@ class DatabaseCheckTemplate(object):
             self.logger.debug(u'数据库 CHARSET      {0}'.format(self.charset))
 
             self.MYSQL = MysqlConnection(host=self.host, port=self.port, user=self.user, password=self.password,
-                                         db_name=self.db_name, charset=self.charset, logger=logger)
+                                         db_name=self.db_name, charset=self.charset)
         except:
             self.logger.debug(traceback.format_exc())
             self.logger.debug(u'连接数据库失败')
@@ -162,6 +163,7 @@ class DatabaseCheckTemplate(object):
         '''
         # 查询到一个数据的sql
         # eg. 'SELECT prize_name FROM turn_log where user_id = '521206''
+
         select_sqls = self.db_verify
         expect_strings = self.db_expect
         values = self.execute_sqls(select_sqls=select_sqls)

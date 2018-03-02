@@ -27,7 +27,7 @@ def test_api(request):
     format_time = "%Y%m%d%H%M%S"
     post_time = datetime.datetime.now()
     for i in os.listdir('test_framework'):
-        if i == 'upload':
+        if i in ['__init__.py', '__pycache__', 'upload']:
             continue
         try:
             old_post_time = datetime.datetime.strptime(i[:14], format_time)
@@ -38,6 +38,8 @@ def test_api(request):
                 else:
                     os.system("rm -rf  test_framework/{0}".format(i))
         except Exception as e:
+            print('删除时间设置错误')
+            print(i)
             print(e)
 
     r = str(random.random()).split('.')[1]
@@ -52,7 +54,6 @@ def test_api(request):
     if request.method == "POST":
         cf = CaseForm(request.POST, request.FILES)
         print(cf)
-        # if cf.is_valid():
         try:
             filename = cf.cleaned_data['filename']
         except Exception as e:
@@ -71,13 +72,24 @@ def test_api(request):
 
         #写入数据库
         f = Upload()
+        f.run_dir = flag
         f.file_path = filename
         f.save()
+
+        results = Upload.objects.all().values_list('run_dir', 'file_path')  # 取出run_dir和file_path列，并生成一个列表
+        print(results)
+        filename = ''
+        for result in results:
+            if result[0] == flag:
+                filename = result[1].split('/upload/')[1]
 
         # 上传的测试用例移动到对应位置
         src_testcase_file = os.path.join('test_framework', 'upload', str(filename))
         dst_testcase_file = os.path.join('test_framework', flag, str(filename))
         shutil.move(src_testcase_file, dst_testcase_file)
+
+        # 清空数据库
+        Upload.objects.filter(run_dir=flag).delete()
 
         # 修改配置文件
         for i in os.listdir(os.path.join('test_framework', flag)):

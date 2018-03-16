@@ -93,8 +93,9 @@ def test_api(request):
 
         # 修改配置文件
         for i in os.listdir(os.path.join('test_framework', flag)):
-            if re.search(test_env, i):
-                shutil.copyfile(os.path.join('test_framework', flag, i), os.path.join('test_framework', flag, 'config.py'))
+            if re.match('config', i):
+                if re.search(test_env, i):
+                    shutil.copyfile(os.path.join('test_framework', flag, i), os.path.join('test_framework', flag, 'config.py'))
 
         sys.path.append('test_framework')
         sys.path.append(os.path.join('test_framework', flag))

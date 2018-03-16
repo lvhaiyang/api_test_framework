@@ -3,9 +3,13 @@ import hmac
 import base64
 
 
-def sha256_base64(mag, key):
-    signature = hmac.new(key, mag.encode('utf-8'), digestmod=hashlib.sha256).digest()
-    return base64.b64encode(signature)
+def hmac_sha_base64(msg, mode, key):
+    if mode == 'sha256':
+        signature = hmac.new(key, msg.encode('utf-8'), digestmod=hashlib.sha256).digest()
+        return base64.b64encode(signature)
+    elif mode == 'sha1':
+        signature = hmac.new(key, msg.encode('utf-8'), digestmod=hashlib.sha1).digest()
+        return base64.b64encode(signature)
 
 
 

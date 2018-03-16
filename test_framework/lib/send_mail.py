@@ -79,12 +79,12 @@ def send_mail(mailto_addrs=None, test_report=None, test_info=None, report_file_p
     '''
     logger = logging.getLogger('qa')
     logger.debug(u'开始发送邮件到 {0}'.format(mailto_addrs))
-    sender = 'zidongceshi@juzifenqi.com'
+    sender = 'xiaoyi_test@139.com'
     receiver = mailto_addrs
     subject = '自动化测试报告'
-    smtpserver = 'smtp.qiye.163.com'
-    username = 'zidongceshi@juzifenqi.com'
-    password = 'JUZIfenqi3'
+    smtpserver = 'smtp.139.com'
+    username = 'xiaoyi_test@139.com'
+    password = 'xiaoyi2015'
 
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject

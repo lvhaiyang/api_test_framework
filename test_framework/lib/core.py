@@ -355,7 +355,7 @@ def run_case(test_datas, json_file_path, env_path):
         test_data = test_datas[i]
 
         try:
-            case_name, api_name, api_url, headers, request_type, data_type, data, db_switch, expect_data = test_data
+            api_name, api_url, headers, request_type, data_type, data, db_setup_del, db_setup_insert, db_teardown, db_verify, db_expect, expect_data = test_data
         except Exception as e:
             logger.info(u'测试用例读取失败')
             return '测试用例读取失败'

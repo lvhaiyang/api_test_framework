@@ -113,6 +113,8 @@ def request_mode(session=None, request_type=None, url=None, data_type=None, data
                 res = session.post(url=url, data=data, headers=headers, verify=False, timeout=60)
         elif request_type == u'get':
             res = session.get(url=url, params=data, headers=headers, verify=False, timeout=60)
+        elif request_type == u'put':
+            res = session.put(url=url, params=data, headers=headers, verify=False, timeout=60)
         else:
             logger.debug(u'请求类型错误')
 
@@ -483,7 +485,7 @@ def run_case(test_datas, json_file_path, env_path):
             if eval(db_teardown):
                 logger.debug(u'数据库测试数据清理： 开启')
                 try:
-                    DB = case_mode.DatabaseCheck(config_mode, logger=logger, send_data=data,
+                    DB = case_mode.DatabaseCheck(config_mode, send_data=data,
                                                  json_file_path=json_file_path, db_setup_del=db_setup_del,
                                                  db_setup_insert=db_setup_insert, db_teardown=db_teardown,
                                                  db_verify=db_verify, db_expect=db_expect)

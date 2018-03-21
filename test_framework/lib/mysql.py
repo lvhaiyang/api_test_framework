@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 import traceback
 import logging
+from sshtunnel import SSHTunnelForwarder
 from lib.core import *
 
 
@@ -16,26 +17,36 @@ class MysqlConnection(object):
     '''
     这个类定义了一个连接MQSQL，增删改查的模板
     '''
-    def __init__(self, host, port, user, password, db_name, charset):
+    def __init__(self, host, ssh_user, ssh_password, mysql_port, mysql_user, mysql_password, db_name, charset):
         self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
+        self.port = mysql_port
+        self.ssh_user = ssh_user
+        self.ssh_password = ssh_password
+        self.user = mysql_user
+        self.password = mysql_password
         self.db_name = db_name
         self.charset = charset
         self.logger = logging.getLogger('qa')
 
+        # self.logger.debug(u'开始配置数据库服务器代理')
+        self.server = SSHTunnelForwarder(
+            (self.host, 22),
+            ssh_password=self.ssh_password,
+            ssh_username=self.ssh_user,
+            remote_bind_address=('127.0.0.1', self.port))
+
     def insert(self, sql):
         try:
             self.logger.debug(u'开始执行 insert 语句  {0}'.format(sql))
-
-            db = mysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.password,
+            self.server.start()
+            db = mysql.connect(host='127.0.0.1', port=self.server.local_bind_port, user=self.user, passwd=self.password,
                                      db=self.db_name, charset=self.charset)
 
             cursor = db.cursor()
             cursor.execute(sql)
             db.commit()
             db.close()
+            self.server.close()
             self.logger.debug(u'insert 语句执行成功 ')
         except:
             self.logger.debug(u'insert 语句执行失败 ')
@@ -45,12 +56,14 @@ class MysqlConnection(object):
     def delete(self, sql):
         try:
             self.logger.debug(u'开始执行 delete 语句  sql : {0}'.format(sql))
-            db = mysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.password,
+            self.server.start()
+            db = mysql.connect(host='127.0.0.1', port=self.server.local_bind_port, user=self.user, passwd=self.password,
                                       db=self.db_name, charset=self.charset)
             cursor = db.cursor()
             cursor.execute(sql)
             db.commit()
             db.close()
+            self.server.close()
             self.logger.debug(u'delete 语句执行成功 ')
         except:
             self.logger.debug(u'delete 语句执行失败 ')
@@ -59,12 +72,14 @@ class MysqlConnection(object):
     def update(self, sql):
         try:
             self.logger.debug(u'开始执行 update 语句  sql : {0}'.format(sql))
-            db = mysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.password,
+            self.server.start()
+            db = mysql.connect(host='127.0.0.1', port=self.server.local_bind_port, user=self.user, passwd=self.password,
                                       db=self.db_name, charset=self.charset)
             cursor = db.cursor()
             cursor.execute(sql)
             db.commit()
             db.close()
+            self.server.close()
             self.logger.debug(u'update 语句执行成功 ')
         except:
             self.logger.debug(u'update 语句执行失败 ')
@@ -73,7 +88,8 @@ class MysqlConnection(object):
     def select(self, sql):
         try:
             self.logger.debug(u'开始执行 select 语句  sql : {0}'.format(sql))
-            db = mysql.connect(host=self.host, port=self.port, user=self.user, passwd=self.password,
+            self.server.start()
+            db = mysql.connect(host='127.0.0.1', port=self.server.local_bind_port, user=self.user, passwd=self.password,
                                       db=self.db_name, charset=self.charset)
             cursor = db.cursor()
             cursor.execute(sql)
@@ -81,9 +97,11 @@ class MysqlConnection(object):
             db.close()
             if results == ():
                 self.logger.debug(u'select 语句 查询结果为空')
+                self.server.close()
                 return 'db_select_pass', ''
             else:
                 self.logger.debug(u'select 语句 查询结果为 {0}'.format(results[0][0]))
+                self.server.close()
                 return 'db_select_pass', results[0][0]
         except:
             self.logger.debug(u'select 语句执行失败')
@@ -120,14 +138,16 @@ class DatabaseCheckTemplate(object):
             self.password = eval('config_mode.{0}.PASSWORD'.format(self.name))
             self.db_name = eval('config_mode.{0}.DB'.format(self.name))
             self.charset = eval('config_mode.{0}.CHARSET'.format(self.name))
+            self.ssh_user = eval('config_mode.{0}.SSH_USER'.format(self.name))
+            self.ssh_password = eval('config_mode.{0}.SSH_PASSWORD'.format(self.name))
             self.logger.debug(u'数据库 HOST    {0}'.format(self.host))
             self.logger.debug(u'数据库 PORT    {0}'.format(self.port))
             self.logger.debug(u'数据库 USER    {0}'.format(self.user))
-            self.logger.debug(u'数据库 PASSWD  {0}'.format(self.password))
+            # self.logger.debug(u'数据库 PASSWD  {0}'.format(self.password))
             self.logger.debug(u'数据库 DB      {0}'.format(self.db_name))
             self.logger.debug(u'数据库 CHARSET      {0}'.format(self.charset))
 
-            self.MYSQL = MysqlConnection(host=self.host, port=self.port, user=self.user, password=self.password,
+            self.MYSQL = MysqlConnection(host=self.host, ssh_user=self.ssh_user, ssh_password=self.ssh_password, mysql_port=self.port, mysql_user=self.user, mysql_password=self.password,
                                          db_name=self.db_name, charset=self.charset)
         except:
             self.logger.debug(traceback.format_exc())

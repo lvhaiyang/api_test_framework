@@ -9,6 +9,7 @@
     6、cmd窗口进入到env_setup目录执行命令 easy install xlutils-2.0.0
     7、cmd窗口执行命令 pip install django
     8、cmd窗口执行命令 pip install uwsgi
+    9、cmd窗口执行命令 pip install sshtunnel
 二、nginx + django + uwsgi配置
     1、安装 nginx    sudo apt-get install nginx
     2、uwsgi 配置  配置文件子在 apiTest Django项目目录下根据实际情况修改

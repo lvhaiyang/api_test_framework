@@ -106,17 +106,8 @@ def request_mode(session=None, request_type=None, url=None, data_type=None, data
     logger.debug(u'开始请求接口：{0}'.format(url))
     headers['User-Agent'] = 'Mozilla/5.0 (Linux; U; Android 7.0; zh-cn; HUAWEI NXT-DL00 Build/HUAWEINXT-DL00) AppleWebKit/533.1 (KHTML, like Gecko) Version/5.0 Mobile Safari/533.1'
     try:
-        if request_type == u'post':
-            if data_type == u'json':
-                res = session.post(url=url, json=data, headers=headers, verify=False, timeout=60)
-            else:
-                res = session.post(url=url, data=data, headers=headers, verify=False, timeout=60)
-        elif request_type == u'get':
-            res = session.get(url=url, params=data, headers=headers, verify=False, timeout=60)
-        elif request_type == u'put':
-            res = session.put(url=url, params=data, headers=headers, verify=False, timeout=60)
-        else:
-            logger.debug(u'请求类型错误')
+        kwargs = {'url': url, data_type: data, 'headers': headers, 'verify': False, 'timeout': 60}
+        res = getattr(session, request_type)(**kwargs)
 
         logger.debug(u'响应状态码为：{}'.format(res.status_code))
         return res

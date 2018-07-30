@@ -446,13 +446,13 @@ def run_case(test_datas, json_file_path, env_path):
                     res, status_code, result, response_time = API.run()
                     new_headers, new_send_data, new_expect_data = API.replace_data()
                     if check_py_version() == '2.x':
-                        test_data[2] = json.dumps(new_headers, ensure_ascii=False, encoding='UTF-8')
-                        test_data[5] = json.dumps(new_send_data, ensure_ascii=False, encoding='UTF-8')
-                        test_data[11] = json.dumps(new_expect_data, ensure_ascii=False, encoding='UTF-8')
+                        test_data[3] = json.dumps(new_headers, ensure_ascii=False, encoding='UTF-8')
+                        test_data[6] = json.dumps(new_send_data, ensure_ascii=False, encoding='UTF-8')
+                        test_data[12] = json.dumps(new_expect_data, ensure_ascii=False, encoding='UTF-8')
                     elif check_py_version() == '3.x':
-                        test_data[2] = json.dumps(new_headers, ensure_ascii=False)
-                        test_data[5] = json.dumps(new_send_data, ensure_ascii=False)
-                        test_data[11] = json.dumps(new_expect_data, ensure_ascii=False)
+                        test_data[3] = json.dumps(new_headers, ensure_ascii=False)
+                        test_data[6] = json.dumps(new_send_data, ensure_ascii=False)
+                        test_data[12] = json.dumps(new_expect_data, ensure_ascii=False)
                 except:
                     # logger.debug(traceback.format_exc())
                     print(traceback.format_exc())
